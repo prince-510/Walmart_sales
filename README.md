@@ -2,34 +2,34 @@
 ```SELECT * FROM Walmart;```
 
 -- Count of records
-SELECT COUNT(*) FROM Walmart;
+```SELECT COUNT(*) FROM Walmart;```
 
 -- Distinct payment methods
-SELECT DISTINCT w.payment_method FROM Walmart w;
+```SELECT DISTINCT w.payment_method FROM Walmart w;```
 
 -- Count by payment method
-SELECT w.payment_method, COUNT(*) AS cnt
+```SELECT w.payment_method, COUNT(*) AS cnt
 FROM Walmart w
-GROUP BY w.payment_method;
+GROUP BY w.payment_method;```
 
 -- Count of distinct branches
-SELECT COUNT(DISTINCT w.Branch) AS branch_count
-FROM Walmart w;
+```SELECT COUNT(DISTINCT w.Branch) AS branch_count
+FROM Walmart w;```
 
 -- Max and Min quantity sold
-SELECT MAX(w.quantity) AS max_qty, MIN(w.quantity) AS min_qty
-FROM Walmart w;
+```SELECT MAX(w.quantity) AS max_qty, MIN(w.quantity) AS min_qty
+FROM Walmart w;```
 
 -- Q1: Payment method analysis
-SELECT 
+```SELECT 
     w.payment_method, 
     COUNT(*) AS transaction_count, 
     SUM(w.quantity) AS total_quantity
 FROM Walmart w
-GROUP BY w.payment_method;
+GROUP BY w.payment_method;```
 
 -- Q2: Highest rated category in each branch
-WITH h AS (
+```WITH h AS (
     SELECT 
         w.Branch, 
         w.category, 
@@ -40,10 +40,10 @@ WITH h AS (
 )
 SELECT * 
 FROM h 
-WHERE h.rank = 1;
+WHERE h.rank = 1;```
 
 -- Q3: Busiest day for each branch
-WITH d AS (
+```WITH d AS (
     SELECT 
         w.Branch, 
         FORMAT(w.date, 'dddd') AS day_name,
@@ -54,17 +54,17 @@ WITH d AS (
 )
 SELECT d.Branch, d.day_name, d.no_trans
 FROM d 
-WHERE d.ranking = 1;
+WHERE d.ranking = 1;```
 
 -- Q4: Total quantity sold per payment method
-SELECT 
+```SELECT 
     w.payment_method, 
     SUM(w.quantity) AS total_qty 
 FROM Walmart w
-GROUP BY w.payment_method;
+GROUP BY w.payment_method;```
 
 -- Q5: Rating summary by city and category
-SELECT 
+```SELECT 
     w.City, 
     w.category,
     MIN(w.rating) AS min_rating, 
@@ -72,19 +72,19 @@ SELECT
     ROUND(AVG(w.rating), 2) AS avg_rating
 FROM Walmart w
 GROUP BY w.City, w.category
-ORDER BY w.City;
+ORDER BY w.City;```
 
 -- Q6: Total profit by category
-SELECT 
+```SELECT 
     w.category, 
     SUM(w.total) AS revenue,
     SUM(w.total * w.profit_margin) AS total_profit
 FROM Walmart w
 GROUP BY w.category
-ORDER BY total_profit DESC;
+ORDER BY total_profit DESC;```
 
 -- Q7: Most common payment method per branch
-WITH p AS (
+```WITH p AS (
     SELECT 
         w.Branch, 
         w.payment_method, 
@@ -95,10 +95,10 @@ WITH p AS (
 )
 SELECT p.Branch, p.payment_method, p.trans
 FROM p 
-WHERE p.ranking = 1;
+WHERE p.ranking = 1;```
 
 -- Q8: Sales shift analysis (Morning, Afternoon, Evening)
-WITH s AS (
+```WITH s AS (
     SELECT 
         w.category, 
         w.time, 
@@ -121,11 +121,11 @@ x AS (
 )
 SELECT * 
 FROM x 
-WHERE x.ranking = 1;
+WHERE x.ranking = 1;```
 
 
 -- Q9: Top 5 branches with highest revenue decrease ratio
-WITH last_year AS (
+```WITH last_year AS (
     SELECT 
         w.Branch, 
         SUM(w.total) AS last_rev
@@ -153,4 +153,4 @@ combined AS (
 )
 SELECT * 
 FROM combined 
-WHERE rank <= 5;
+WHERE rank <= 5;```
