@@ -1,157 +1,156 @@
-# Walmart_sales
+-- View all records
+SELECT * FROM Walmart;
 
-```
+-- Count of records
+SELECT COUNT(*) FROM Walmart;
 
-select * from Walmart ```
+-- Distinct payment methods
+SELECT DISTINCT w.payment_method FROM Walmart w;
 
--- count
-select count(*) from Walmart
-
--- distinct
-select distinct w.payment_method 
-from Walmart w;
-
-select w.payment_method,count(*) as cnt
-from Walmart w
-group by w.payment_method;
-
-
-select count(distinct w.Branch) as branch
-from Walmart w;
-
-select max(w.quantity) as max, min(w.quantity) as min_qty from Walmart w
-
---Business Problems
-
---Q1 Find different payment method and number of transactions,no.of qty sold
-
-```select w.payment_method,count(*) as cnt,sum(w.quantity) as tot_qty
-from Walmart w
-group by w.payment_method```
-
---Q2 Identify the highest rated category in each branch,
---displaying the branch,categroy,avg rating
-
-
-select * from Walmart wl;
-
-with h as (
-select w.Branch,w.category,AVG(w.rating) as avg_rating,
-DENSE_RANK() over(partition by w.branch order by avg(w.rating) desc) as rank
-from Walmart w
-group by w.Branch,w.category)
-select *
-from h
-where h.rank = '1';
-
---Q3 Identify the busiest day for each branch based on the number of transaction
-
-with d as (
-SELECT w.Branch, FORMAT(w.date , 'dddd') AS day_name,
-count(*) as no_tans,
-DENSE_RANK() over(partition by w.branch order by count(*) desc) as ranking
+-- Count by payment method
+SELECT w.payment_method, COUNT(*) AS cnt
 FROM Walmart w
-group by w.Branch,FORMAT(w.date , 'dddd')
+GROUP BY w.payment_method;
+
+-- Count of distinct branches
+SELECT COUNT(DISTINCT w.Branch) AS branch_count
+FROM Walmart w;
+
+-- Max and Min quantity sold
+SELECT MAX(w.quantity) AS max_qty, MIN(w.quantity) AS min_qty
+FROM Walmart w;
+
+-- Q1: Payment method analysis
+SELECT 
+    w.payment_method, 
+    COUNT(*) AS transaction_count, 
+    SUM(w.quantity) AS total_quantity
+FROM Walmart w
+GROUP BY w.payment_method;
+
+-- Q2: Highest rated category in each branch
+WITH h AS (
+    SELECT 
+        w.Branch, 
+        w.category, 
+        AVG(w.rating) AS avg_rating,
+        DENSE_RANK() OVER(PARTITION BY w.Branch ORDER BY AVG(w.rating) DESC) AS rank
+    FROM Walmart w
+    GROUP BY w.Branch, w.category
 )
-select  d.Branch, 
-    d.day_name, 
-    d.no_tans
-	from d
-where d.ranking = '1';
+SELECT * 
+FROM h 
+WHERE h.rank = 1;
 
---Q4 Calculate the total quantity of items sold per payment method.
---List payment method and total quantity
-
-select w.payment_method,sum(w.quantity) as total_qty from Walmart w
-group by w.payment_method;
-
---Q5 Determine the average,minimum and maximum rating of category for each city
---List the city, average_rating,min_rating,max_rating
-
-select w.City,w.category,
-MIN(w.rating) as min_rat, max(w.rating) as max_rat
-,round(avg(w.rating),2) as avg_rat
-from Walmart w
-group by w.City,w.category
-order by w.City;
-
---Q6 Calculate the total profit for each category by considering total_profit 
--- as unit_price*quantity*profit_margin --or-- total*profit_margin
---List category, total_profit where ordered from highest to lowest
-
-
-select w.category,sum(w.total) as revenue,
-sum(w.total*w.profit_margin) as total_profit
-from Walmart w
-group by w.category
-order by sum(w.total*w.profit_margin) desc
-
---Q7 Determine the most common payment method for each branch,
--- display branch and the preferred payment method
-
-with p as (
-select w.Branch,w.payment_method,count(*) as trans,
-DENSE_RANK() over(partition by w.branch order by count(*) desc) as ranking
-from Walmart w
-group by w.Branch,w.payment_method
+-- Q3: Busiest day for each branch
+WITH d AS (
+    SELECT 
+        w.Branch, 
+        FORMAT(w.date, 'dddd') AS day_name,
+        COUNT(*) AS no_trans,
+        DENSE_RANK() OVER(PARTITION BY w.Branch ORDER BY COUNT(*) DESC) AS ranking
+    FROM Walmart w
+    GROUP BY w.Branch, FORMAT(w.date, 'dddd')
 )
-select p.* from p
-where p.ranking = 1
+SELECT d.Branch, d.day_name, d.no_trans
+FROM d 
+WHERE d.ranking = 1;
 
---Q8 Categorize sales into 3 group Morning,Afternoon,Evening
---Find out which of the shift and number of invoices
+-- Q4: Total quantity sold per payment method
+SELECT 
+    w.payment_method, 
+    SUM(w.quantity) AS total_qty 
+FROM Walmart w
+GROUP BY w.payment_method;
 
-with s as (
-select w.category,w.time,w.invoice_id,
-case when DATEPART(HOUR,w.time) <12 then 'Morning'
-     when DATEPART(Hour,w.time) <17  then 'Afternoon'
-	 else 'Evening'
-	 end as 'Shift'
-from 
-Walmart w),x as 
-(select s.category,s.Shift,count(*) as inv,
-DENSE_RANK() over(partition by s.category order by count(*) desc) as ranking
-from s
- group by s.category,s.Shift
- )
- select * from x
- where x.ranking = 1;
+-- Q5: Rating summary by city and category
+SELECT 
+    w.City, 
+    w.category,
+    MIN(w.rating) AS min_rating, 
+    MAX(w.rating) AS max_rating,
+    ROUND(AVG(w.rating), 2) AS avg_rating
+FROM Walmart w
+GROUP BY w.City, w.category
+ORDER BY w.City;
 
- 
-select * from (
-select k.category,k.Shift,count(*) as inv,
-DENSE_RANK() over(partition by k.category order by count(*) desc) as ranking
-from (
-select w.category,w.time,w.invoice_id,
-case when DATEPART(HOUR,w.time) <12 then 'Morning'
-     when DATEPART(Hour,w.time) <17  then 'Afternoon'
-	 else 'Evening'
-	 end as 'Shift'
-from 
-Walmart w) as k
-group by k.category,k.Shift) as x
-where x.ranking = 1
-;
---Q9 Identify 5 branches with highest decrease ratio in revenue
---compare to last year(current year 2023 and last year 2022)
+-- Q6: Total profit by category
+SELECT 
+    w.category, 
+    SUM(w.total) AS revenue,
+    SUM(w.total * w.profit_margin) AS total_profit
+FROM Walmart w
+GROUP BY w.category
+ORDER BY total_profit DESC;
 
--- revenue decrease ratio =  (last_rev - current_rev)/last_rev * 100
+-- Q7: Most common payment method per branch
+WITH p AS (
+    SELECT 
+        w.Branch, 
+        w.payment_method, 
+        COUNT(*) AS trans,
+        DENSE_RANK() OVER(PARTITION BY w.Branch ORDER BY COUNT(*) DESC) AS ranking
+    FROM Walmart w
+    GROUP BY w.Branch, w.payment_method
+)
+SELECT p.Branch, p.payment_method, p.trans
+FROM p 
+WHERE p.ranking = 1;
 
- with last_year as (
-select w.Branch,sum(w.total) as last_rev
-from Walmart w
-where datepart(year,w.date) = 2022
-group by w.Branch),
-current_year as (
-select w.Branch, sum(w.total) as cur_rev
-from Walmart w
-where DATEPART(year,w.date) = 2023
-group by w.Branch)
-select * from (
-select l.Branch,last_rev,cur_rev, round((last_rev-cur_rev)/nullif(last_rev,0)*100,2) as decrease_ratio,
-DENSE_RANK() over(order by round((last_rev-cur_rev)/nullif(last_rev,0)*100,2) desc) as ran
-from last_year l
-full join current_year c on c.Branch = l.Branch ) as k
-where k.ran<=5
+-- Q8: Sales shift analysis (Morning, Afternoon, Evening)
+WITH s AS (
+    SELECT 
+        w.category, 
+        w.time, 
+        w.invoice_id,
+        CASE 
+            WHEN DATEPART(HOUR, w.time) < 12 THEN 'Morning'
+            WHEN DATEPART(HOUR, w.time) < 17 THEN 'Afternoon'
+            ELSE 'Evening'
+        END AS Shift
+    FROM Walmart w
+),
+x AS (
+    SELECT 
+        s.category, 
+        s.Shift, 
+        COUNT(*) AS inv,
+        DENSE_RANK() OVER(PARTITION BY s.category ORDER BY COUNT(*) DESC) AS ranking
+    FROM s
+    GROUP BY s.category, s.Shift
+)
+SELECT * 
+FROM x 
+WHERE x.ranking = 1;
 
 
+-- Q9: Top 5 branches with highest revenue decrease ratio
+WITH last_year AS (
+    SELECT 
+        w.Branch, 
+        SUM(w.total) AS last_rev
+    FROM Walmart w
+    WHERE DATEPART(YEAR, w.date) = 2022
+    GROUP BY w.Branch
+),
+current_year AS (
+    SELECT 
+        w.Branch, 
+        SUM(w.total) AS cur_rev
+    FROM Walmart w
+    WHERE DATEPART(YEAR, w.date) = 2023
+    GROUP BY w.Branch
+),
+combined AS (
+    SELECT 
+        l.Branch,
+        last_rev,
+        cur_rev,
+        ROUND((last_rev - cur_rev) / NULLIF(last_rev, 0) * 100, 2) AS decrease_ratio,
+        DENSE_RANK() OVER(ORDER BY ROUND((last_rev - cur_rev) / NULLIF(last_rev, 0) * 100, 2) DESC) AS rank
+    FROM last_year l
+    FULL JOIN current_year c ON c.Branch = l.Branch
+)
+SELECT * 
+FROM combined 
+WHERE rank <= 5;
