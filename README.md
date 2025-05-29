@@ -2,7 +2,7 @@
 
 ```
 
-select * from Walmart
+select * from Walmart ```
 
 -- count
 select count(*) from Walmart
@@ -25,9 +25,9 @@ select max(w.quantity) as max, min(w.quantity) as min_qty from Walmart w
 
 --Q1 Find different payment method and number of transactions,no.of qty sold
 
-select w.payment_method,count(*) as cnt,sum(w.quantity) as tot_qty
+```select w.payment_method,count(*) as cnt,sum(w.quantity) as tot_qty
 from Walmart w
-group by w.payment_method
+group by w.payment_method```
 
 --Q2 Identify the highest rated category in each branch,
 --displaying the branch,categroy,avg rating
@@ -153,5 +153,5 @@ DENSE_RANK() over(order by round((last_rev-cur_rev)/nullif(last_rev,0)*100,2) de
 from last_year l
 full join current_year c on c.Branch = l.Branch ) as k
 where k.ran<=5
-```
+
 
