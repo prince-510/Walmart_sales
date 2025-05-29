@@ -1,5 +1,5 @@
 -- View all records
-SELECT * FROM Walmart;
+```SELECT * FROM Walmart;```
 
 -- Count of records
 SELECT COUNT(*) FROM Walmart;
